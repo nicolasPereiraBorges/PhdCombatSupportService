@@ -1,0 +1,8 @@
+# depslib dependency file v1.0
+1502708861 source:d:\matlab_mestrado\lib_c\main.c
+	<stdio.h>
+	<stdlib.h>
+	"float.h"
+	<time.h>
+	<math.h>
+
