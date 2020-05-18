@@ -11,12 +11,12 @@ function result = AngleIsInRange(point1, point2, angleRef)
 % Date: 21/02/2017
 
         % Get all parameters
-        param = Get_Parameters();
+        %param = Get_Parameters();
         % Get only flight path parameters
-        flightPathParam = param.PathPlanning;
+        %flightPathParam = param.PathPlanning;
         % Calculate angle with new point
         angle = CalculateAngleBetweenTwoPoints(point1, point2);
-        variation = flightPathParam.angleVariation;
+        variation = pi/3;%flightPathParam.angleVariation;
         if angle < 0 && angleRef < 0
             angle = abs(angle);
             angleRef = abs(angleRef);

@@ -17,8 +17,9 @@ function uavs = CreateUavs(gcs)
     for i = 1: nUAVs
         uav = UAV();
         uav.Id = i;
+        %uav.Angle = parameters.angleVariation;
         uav.Speed = speed;
-        uav.Gcs = gcs;
+        uav.Gcs = gcs;        
         uav.Position = gcs.Position;        
         uavs = uavs.AddLast(uav);
     end

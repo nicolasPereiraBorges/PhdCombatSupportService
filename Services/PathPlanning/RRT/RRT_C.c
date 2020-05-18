@@ -3,8 +3,8 @@
 #include "float.h" // For DBL_MAX
 #include<time.h> // For rand()
 #include <math.h> /* sqrt, fabs, fmin, fmax */
-//#include "mex.h" /* MEX functions and types */
-//#include "matrix.h" /* mwIndex, mwSize */
+#include "mex.h" /* MEX functions and types */
+#include "matrix.h" /* mwIndex, mwSize */
 
 
 // Define structs of UAVs, Threats and Parameters
@@ -58,13 +58,13 @@ typedef struct edge Edge;
 #define MIN(a,b) (((a)<(b))?(a):(b))
 #define MAX(a,b) (((a)>(b))?(a):(b))
 
-
 // Prototypes
-//void ReadInput(const mxArray **input, UAV* uav, Threat* threats, int nThreats, Param* param);
-double* ApplyRRT(UAV uav, Threat* threats, int nThreats, Param param, int* nPath);
+void mexFunction(int nOutput, mxArray **output, int nInput, const mxArray **input);
+void ReadInput(const mxArray **input, UAV* uav, Threat* threats, int nThreats, Param* param);
+double* ApplyRRT(UAV uav, Threat* threats, int nThreats, Param param, int* nPoints);
 void CheckBounds(Param* param, Threat* threats, int nThreats);
 double CalculateDistance(double x1, double y1, double x2, double y2);
-void CreateRandomPoint(Param param, double* xOutput, double* yOutput);
+void CreateRandomPoint(Param param, double* xOutput, double* yOutput, double currentPosition_x, double currentPosition_y, double angleRef);
 int FindNearestVertex(Vertex* vertexes, int numberOfVertexes, int x, int y);
 double CalculateAngleBetweenTwoPoints(double x1, double y1, double x2, double y2);
 int AngleIsInRange(double x1, double y1, double x2, double y2, double angleRef, Param param);
@@ -74,106 +74,56 @@ double CalculateFx(double a, double b, double x);
 int LineIntersectsObstacle(double x1, double y1, double x2, double y2, Threat* threats, int nThreats);
 void GetIntersectionBetweenLineAndThreat(double x1, double y1, double x2, double y2, Threat circle, double* x1Out, double* y1Out, double* x2Out, double* y2Out, int* numberOfInterceptions);
 int PointInsideDomain(double x, double y, double xlim1, double xlim2, double ylim1, double ylim2);
-void ApplyDijktra(Vertex* vertexes, Edge* edges, int idSource, int idGoal);
 int GetIndexOfMatrix(int i, int j, int n);
 int MinDistance(double dist[], int sptSet[], int nVertexes);
-int* Dijkstra(double* graph, int src, int goal, int nVertexes, int* nPath);
 void GetPath(int parent[], int j, int outputIndexes[], int* currentIndex);
+int* Dijkstra(double* graph, int src, int goal, int nVertexes, int* nPath);
 double* GetPointsOfDijkstra(Vertex* vertexes, int* pathIndexes, int nPath);
+double* ReducePath(double* points, int nPath, Threat* threats, int nThreats, int* nReducedPath);
+int GetQuadrant(double angle);
 
 // Main function
 /* Entry point for the MEX interface */
-int main()
+void mexFunction(int nOutput, mxArray **output, int nInput, const mxArray **input)
 {
+
+    double *dfd;
+    const mwSize *size_c_1, *size_c_2; /* Size of the input arguments*/
+
+    int i;
+
+    /* Get size of the inputs*/
+    const mwSize* size_threats = mxGetDimensions(input[1]);
+    int nThreats = size_threats[0];
+
     UAV uav;
+    Threat* threats;
+    threats = (Threat*) malloc(sizeof(Threat) * nThreats);
     Param param;
-    int nThreats = 7;
-    Threat threats[nThreats];
 
-      // Get UAV attributes
-    uav.position[0] = 1;
-    uav.position[1] = 0;
-    uav.goal[0] = 15000;
-    uav.goal[1] = 0;
-    uav.angle = 0;
-
-
-    param.numberOfEdges = 5000;
-    param.distanceEdges = 0.03;
-    param.maxIterations = 15000;
-    param.angleVariation = 1.0472;
-    param.upperLeft[0] = -500;
-    param.upperLeft[1] = 5300;
-    param.lowerRight[0] = 15500;
-    param.lowerRight[1] = -6540.31669469476;
-    param.distanceThreshold = 450;
-
-
-
-    threats[0].cx = 2737.56839695844;
-    threats[0].cy = -5109.91669469476;
-    threats[0].range = 1192;
-
-    threats[1].cx = 7141.13061710690;
-    threats[1].cy = 4000.19156848334;
-    threats[1].range = 859;
-
-    threats[2].cx = 10978.3140876165;
-    threats[2].cy = -3434.62915840442;
-    threats[2].range = 855;
-
-    threats[3].cx = 2749.40694811493;
-    threats[3].cy = -177.387325581062;
-    threats[3].range = 813;
-
-    threats[4].cx = 2886.97315454407;
-    threats[4].cy = 2112.73869777410;
-    threats[4].range = 831;
-
-    threats[5].cx = 10404.8837365395;
-    threats[5].cy = 800.083132449590;
-    threats[5].range = 1044;
-
-    threats[6].cx = 13036.9788652146;
-    threats[6].cy = 2900.01547395576;
-    threats[6].range = 942;
-
-
+    ReadInput(input, &uav, threats, nThreats, &param);
 
     // Update lower right and upper left if necessary
     //CheckBounds(&param, threats, nThreats);
-    int i;
-   // printf("Param - nEdges %d DistEdges %.2f MaxIterations %d angle %.2f UpperLeft [%.2f, %.2f] LowerRight [%.2f, %.2f] DistanceThresh %.2f\n", param.numberOfEdges, param.distanceEdges, param.maxIterations, param.angleVariation, param.upperLeft[0], param.upperLeft[1], param.lowerRight[0], param.lowerRight[1], param.distanceThreshold);
-    int nPath;
-    double* path;
+    int nPoints;
+    double* path = ApplyRRT(uav, threats, nThreats, param, &nPoints);
 
-    double x1 = 8331.46683000000;
-    double y1 = 127.016710000000;
-    double x2 = 9426.08417000000;
-    double y2 = -2087.95129000000;
-    double angle = -1.73341000000000;
+    //printf("After\n");
+    int j;
+    //for (j = 0; j < nPoints; j++)
+    //   printf("%d %.2f %2f\n", j, path[j], path[j+nPoints]);
 
-    printf(" Angle is in range - %d\n", AngleIsInRange(x1,y1,x2,y2,angle, param));
+    /* create output matrix C */
+    output[0] = mxCreateDoubleMatrix(nPoints, 2, mxREAL);
+    dfd = mxGetPr(output[0]);
+    for (i = 0; i < nPoints*2; i++)
+        dfd[i] = path[i];
 
-    return 0;
+    free(path);
 
 
-    for (i = 0; i < 1; i++)
-    {
-      //  printf("%d\n", i);
-        path = ApplyRRT(uav, threats, nThreats, param, &nPath);
-        int j;
-       // for (j = 0; j < nPath; j++)
-         //   printf("%d %.2f %2f\n", j, path[j], path[j+nPath]);
-    }
-
-      mexErrMsgIdAndTxt("Automatic Message","Executed without errors");
-
-   // free(path);
-    return 0;
 }
 
-/*
 // void ReadInput(const mxArray **input, UAV* uav, Threat* threats, int nThreats, Param* param)
 // Convert input values to struct UAV Threat* and Param
 void ReadInput(const mxArray **input, UAV* uav, Threat* threats, int nThreats, Param* param)
@@ -210,7 +160,8 @@ void ReadInput(const mxArray **input, UAV* uav, Threat* threats, int nThreats, P
     param->lowerRight[1] = paramArray[7];
     param->distanceThreshold = paramArray[8];
 }
-*/
+
+
 // void ApplyRRT(double* path, UAV uav, Threat* threats, int nThreats, Param param)
 // Apply Rapidly Exploring Random Tree for calculating path that avoid the threats
 double* ApplyRRT(UAV uav, Threat* threats, int nThreats, Param param, int* nPoints)
@@ -227,7 +178,7 @@ double* ApplyRRT(UAV uav, Threat* threats, int nThreats, Param param, int* nPoin
     vertexes[0].id = 0;
     vertexes[0].x = uav.position[0];
     vertexes[0].y = uav.position[1];
-    vertexes[0].distance = CalculateDistance(uav.position[0], uav.position[1], uav.goal[0], uav.goal[1]);
+    vertexes[0].distance = DBL_MAX;//CalculateDistance(uav.position[0], uav.position[1], uav.goal[0], uav.goal[1]);
     vertexes[0].angle = uav.angle;
     numberOfVertexes = 1;
 
@@ -238,23 +189,33 @@ double* ApplyRRT(UAV uav, Threat* threats, int nThreats, Param param, int* nPoin
     {
         // Increment the number of iterations
         iterations++;
-         // Create random point in scenario
-        CreateRandomPoint(param, &x, &y);
+        // Create random point in scenario
+        CreateRandomPoint(param, &x, &y, uav.position[0], uav.position[1], uav.angle);
         int idClosestVertex = FindNearestVertex(vertexes, numberOfVertexes, x, y);
         //printf("%d - Angle in Range\n", i);
         int inRange = AngleIsInRange(vertexes[idClosestVertex].x, vertexes[idClosestVertex].y, x, y, vertexes[idClosestVertex].angle, param);
+        //printf("Before range\n");
         // Check if point is too close to vertex or if angle between closest vertex and point out of range
-        if ((inRange == 0) || (vertexes[idClosestVertex].distance < param.distanceThreshold))
+       // printf("Before range\n");
+        if (inRange == 0) //|| (vertexes[idClosestVertex].distance < param.distanceThreshold))
+        {
+            //printf("%.5f\t%.5f\t%.5f\t%.5f\t%.5f\n", vertexes[idClosestVertex].x, vertexes[idClosestVertex].y, x, y, vertexes[idClosestVertex].angle);
             // Out of angle range
             continue;
+
+        }
+
+        //printf("Passed range\n");
         // Project line from closest vertex to random point with a distance threshold
         ProjectPoint(vertexes[idClosestVertex].x, vertexes[idClosestVertex].y, x, y, param.distanceThreshold, &xOut, &yOut);
         // Check if edge candidate pass through some threat
         if (LineIntersectsObstacle(vertexes[idClosestVertex].x, vertexes[idClosestVertex].y, xOut, yOut, threats, nThreats)== 1)
-            //printf("Intercepts\n");
+        {
+         //printf("Intercepts\n");
             continue;
+        }
+        //printf("Passed intercept\n");
         i++;
-
         // Add vertex
         double distToGoal = CalculateDistance(xOut, yOut, uav.goal[0], uav.goal[1]);
         vertexes[numberOfVertexes].id = numberOfVertexes;
@@ -267,37 +228,39 @@ double* ApplyRRT(UAV uav, Threat* threats, int nThreats, Param param, int* nPoin
             idGoalVertex = numberOfVertexes;
 
 
-         //Add Edge
+        //Add Edge
         //printf("%d - Update edge\n", i);
         edges[numberOfVertexes-1].distance = param.distanceThreshold;
         edges[numberOfVertexes-1].idPredecessor = idClosestVertex;
         edges[numberOfVertexes-1].idSucessor = numberOfVertexes;
-
-        //printf("%d\t%d\t%.3f\t%.3f\t%.3f\t%.3f\n",i, numberOfVertexes-1, vertexes[idClosestVertex].x, vertexes[idClosestVertex].y, xOut, yOut);
         numberOfVertexes++;
-       // if (distToGoal <= param.distanceThreshold)
-       //     break;
+        //if (distToGoal <= param.distanceThreshold)
+        //    break;
 
         // printf("No intercepts\n");
     }
-
+    double* points;
 
     double* costMatrix = (double*) malloc(sizeof(double) * (numberOfVertexes*numberOfVertexes));  // idVertex, idEdge, distanc
+    for (i = 0; i < (numberOfVertexes*numberOfVertexes); i++)
+        costMatrix[i] = 0.0;
+
+
     for (i = 0; i < numberOfVertexes-1; i++)
     {
         int idPredecessor = edges[i].idPredecessor;
         int idSuccessor = edges[i].idSucessor;
         costMatrix[GetIndexOfMatrix(idPredecessor, idSuccessor, numberOfVertexes)] = edges[i].distance;
     }
-
     int nPathIndexes;
-    //printf("idGoalVertex - %d %.2f\n", idGoalVertex, vertexes[idGoalVertex].distance);
+
+    //printf("numberOfVertexes - %d idGoalVertex - %d %.2f\n", numberOfVertexes, idGoalVertex, vertexes[idGoalVertex].distance);
     int* pathIndexes = Dijkstra(costMatrix, 0, idGoalVertex, numberOfVertexes, &nPathIndexes);
     int j;
-  //  for (j = 0; j < nPathIndexes; j++)
-  //          printf("Indexes %d - %d\n", j,pathIndexes[j]);
+    //  for (j = 0; j < nPathIndexes; j++)
+    //          printf("Indexes %d - %d\n", j,pathIndexes[j]);
 
-    double* points = GetPointsOfDijkstra(vertexes, pathIndexes, nPathIndexes);
+    points = GetPointsOfDijkstra(vertexes, pathIndexes, nPathIndexes);
 
     //printf("\n\n\n\n\n");
     //for (j = 0; j < nPathIndexes; j++)
@@ -305,8 +268,9 @@ double* ApplyRRT(UAV uav, Threat* threats, int nThreats, Param param, int* nPoin
 
     (*nPoints) = nPathIndexes;
     //free(edges);
-   // free(vertexes);
+    // free(vertexes);
     free(costMatrix);
+
     return points;
 
 }
@@ -341,6 +305,54 @@ double CalculateDistance(double x1, double y1, double x2, double y2)
 
 // void CreateRandomPoint(Param param, double* xOutput, double* yOutput)
 // Create random point in the range of upperLeft and lowerRight
+void CreateRandomPoint(Param param, double* xOutput, double* yOutput, double currentPosition_x, double currentPosition_y, double angleRef)
+{
+    int flag = 0;
+    int refQuadrant = GetQuadrant(angleRef);
+    int opositeQuadrant;
+
+    if (refQuadrant < 3)
+        opositeQuadrant = refQuadrant + 2;
+    else
+        opositeQuadrant = refQuadrant - 2;
+    int iterations = 0;
+    double x, y, r, angle;
+    int quadrant;
+
+    while ((flag == 0) && (iterations < 10))
+    {
+        iterations++;
+          r = (double)rand() / (double)RAND_MAX ;
+          x = (param.lowerRight[0] - param.upperLeft[0]) * r + param.upperLeft[0];
+          r = (double)rand() / (double)RAND_MAX ;
+          y =(param.upperLeft[1] - param.lowerRight[1]) * r + param.lowerRight[1];
+          angle = CalculateAngleBetweenTwoPoints(currentPosition_x, currentPosition_y, x, y);
+          quadrant = GetQuadrant(angle);
+          r = (double)rand() / (double)RAND_MAX ;
+
+          if ((quadrant == refQuadrant) && (r <= 0.375))
+            flag = 1;
+          else if ((quadrant == opositeQuadrant) && (r > 0.375) && (r <= 0.5))
+            flag = 1;
+          else if ((quadrant != opositeQuadrant) && (quadrant != refQuadrant) && (quadrant%2 == 0) && (r > 0.5) && (r <= 0.75))
+            flag = 1;
+          else if ((quadrant != opositeQuadrant && quadrant != refQuadrant)  && (quadrant%2 != 0) && (r > 0.75))
+            flag = 1;
+
+    }
+
+    (*xOutput) = x;
+    (*yOutput) = y;
+}
+
+
+
+
+
+
+
+
+/*
 void CreateRandomPoint(Param param, double* xOutput, double* yOutput)
 {
     double r = (double)rand() / (double)RAND_MAX ;
@@ -348,7 +360,7 @@ void CreateRandomPoint(Param param, double* xOutput, double* yOutput)
     r = (double)rand() / (double)RAND_MAX ;
     *yOutput =(param.upperLeft[1] - param.lowerRight[1]) * r + param.lowerRight[1];
 }
-
+*/
 // int FindNearestVertex(double** vertexes, int numberOfVertexes, int x, int y)
 // Get index of vertex (int vertexes) that is close to x and y
 int FindNearestVertex(Vertex* vertexes, int numberOfVertexes, int x, int y)
@@ -566,17 +578,17 @@ int GetIndexOfMatrix(int i, int j, int n)
 // the set of vertices not yet included in shortest path tree
 int MinDistance(double dist[], int sptSet[], int nVertexes)
 {
-   // Initialize min value
-   double min = DBL_MAX, min_index;
-   int v;
-   for (v = 0; v < nVertexes; v++)
-     if (sptSet[v] == 0 && dist[v] <= min)
-     {
-         min = dist[v];
-         min_index = v;
-     }
+    // Initialize min value
+    double min = DBL_MAX, min_index;
+    int v;
+    for (v = 0; v < nVertexes; v++)
+        if (sptSet[v] == 0 && dist[v] <= min)
+        {
+            min = dist[v];
+            min_index = v;
+        }
 
-   return min_index;
+    return min_index;
 }
 
 
@@ -592,69 +604,69 @@ void GetPath(int parent[], int j, int outputIndexes[], int* currentIndex)
     outputIndexes[(*currentIndex)++] = j;
     GetPath(parent, parent[j], outputIndexes, currentIndex);
 
-   // printf("%d\n", j);
+    // printf("%d\n", j);
 }
 // Funtion that implements Dijkstra's single source shortest path algorithm
 // for a graph represented using adjacency matrix representation
 int* Dijkstra(double* graph, int src, int goal, int nVertexes, int* nPath)
 {
-     double dist[nVertexes];     // The output array.  dist[i] will hold the shortest
-                      // distance from src to i
+    double dist[nVertexes];     // The output array.  dist[i] will hold the shortest
+    // distance from src to i
     // Parent array to store shortest path tree
-     int parent[nVertexes];
-     int sptSet[nVertexes]; // sptSet[i] will true if vertex i is included in shortest
-                     // path tree or shortest distance from src to i is finalized
-     int i;
-     // Initialize all distances as INFINITE and stpSet[] as false
-     for (i = 0; i < nVertexes; i++)
-     {
+    int parent[nVertexes];
+    int sptSet[nVertexes]; // sptSet[i] will true if vertex i is included in shortest
+    // path tree or shortest distance from src to i is finalized
+    int i;
+    // Initialize all distances as INFINITE and stpSet[] as false
+    for (i = 0; i < nVertexes; i++)
+    {
         parent[i] = -1;
         dist[i] = DBL_MAX;
         sptSet[i] = 0;
-     }
+    }
 
 
-     // Distance of source vertex from itself is always 0
-     dist[src] = 0;
-     int count;
-     // Find shortest path for all vertices
-     for ( count = 0; count < nVertexes-1; count++)
-     {
-       // Pick the minimum distance vertex from the set of vertices not
-       // yet processed. u is always equal to src in first iteration.
-       int u = MinDistance(dist, sptSet, nVertexes);
-       //printf("U - %d\n", u);
+    // Distance of source vertex from itself is always 0
+    dist[src] = 0;
+    int count;
+    // Find shortest path for all vertices
+    for ( count = 0; count < nVertexes-1; count++)
+    {
+        // Pick the minimum distance vertex from the set of vertices not
+        // yet processed. u is always equal to src in first iteration.
+        int u = MinDistance(dist, sptSet, nVertexes);
+        //printf("U - %d\n", u);
 
-       // Mark the picked vertex as processed
-       sptSet[u] = 1;
+        // Mark the picked vertex as processed
+        sptSet[u] = 1;
 
 
-       int indexMatrix, v;
-       // Update dist value of the adjacent vertices of the picked vertex.
-       for (v = 0; v < nVertexes; v++)
-       {
-        indexMatrix = GetIndexOfMatrix(u,v,nVertexes);
-        // Update dist[v] only if is not in sptSet, there is an edge from
-         // u to v, and total weight of path from src to  v through u is
-         // smaller than current value of dist[v]
-         if (!sptSet[v] && graph[indexMatrix] && dist[u] != DBL_MAX
-                                       && dist[u]+graph[indexMatrix] < dist[v])
-                                       {
-                                           //printf("Parent[%d] = %d\n",v,u);
-                                           parent[v]  = u;
-                                           dist[v] = dist[u] + graph[indexMatrix];
-                                       }
+        int indexMatrix, v;
+        // Update dist value of the adjacent vertices of the picked vertex.
+        for (v = 0; v < nVertexes; v++)
+        {
+            indexMatrix = GetIndexOfMatrix(u,v,nVertexes);
+            // Update dist[v] only if is not in sptSet, there is an edge from
+            // u to v, and total weight of path from src to  v through u is
+            // smaller than current value of dist[v]
+            if (!sptSet[v] && graph[indexMatrix] && dist[u] != DBL_MAX
+                    && dist[u]+graph[indexMatrix] < dist[v])
+            {
+                //printf("Parent[%d] = %d\n",v,u);
+                parent[v]  = u;
+                dist[v] = dist[u] + graph[indexMatrix];
+            }
 
-       }
+        }
 
-     }
+    }
 
-     int pathIndexes[nVertexes];
-     (*nPath) = 0;
+    int* pathIndexes = (int*) malloc(sizeof(int)*nVertexes);
+    (*nPath) = 0;
 
-     GetPath(parent, goal, pathIndexes, nPath);
-     //printf("11.2\n");
-     pathIndexes[(*nPath)++] = src;
+    GetPath(parent, goal, pathIndexes, nPath);
+    //printf("11.2\n");
+    pathIndexes[(*nPath)++] = src;
 
     return pathIndexes;
 }
@@ -672,6 +684,28 @@ double* GetPointsOfDijkstra(Vertex* vertexes, int* pathIndexes, int nPath)
 
     return outputPath;
 
+}
+
+int GetQuadrant(double angle)
+{
+    double pi = 3.14159265358979;
+    // Get base angles
+    double q1[2] = {0, pi/2.0};
+    double q2[2] = {pi/2.0, pi};
+    double q3[2] = {-pi, -pi/2.0};
+
+    int quadrant;
+
+    if ((angle >= q1[0]) && (angle <= q1[1]))
+        quadrant = 1;
+    else if ((angle >= q2[0]) && (angle <= q2[1]))
+        quadrant = 2;
+    else if ((angle >= q3[0]) && (angle <= q3[1]))
+        quadrant = 3;
+    else
+        quadrant = 4;
+
+    return quadrant;
 }
 /*
 double* ReducePath(double* points, int nPath, Threat* threats, int nThreats, int* nReducedPath)

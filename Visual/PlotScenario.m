@@ -11,22 +11,21 @@ function PlotScenario(scenario, iteration)
     gfs = scenario.GroundForces;
     gcs = scenario.GCS;
         
-        
+        factor = 1000;
         %Clear screen and plot base points
         cla reset
         hold all;    
-        xlim([-200, param.ScenarioWidth + 200]);
-        ylim([-200, param.ScenarioHeight + 200]);
+        xlim([-factor, param.ScenarioWidth + factor]);
+        ylim([-factor, param.ScenarioHeight + factor]);
         % Plot threats
         PlotPosition(threats)
         % Plot Edges
         PlotPosition(gfs); 
         % Plot UAVs
         PlotPosition(uavs);               
-        %plot(gcs.Position.X, gcs.Position.Y, '.g', 'markersize', 30); 
-        %text(gcs.Position.X - 100, gcs.Position.Y + 150, "GCS"); 
-        title("Simulation time = " + num2str(iteration));        
-        
+        plot(gcs.Position.X, gcs.Position.Y, '.g', 'markersize', 30); 
+        text(gcs.Position.X - 100, gcs.Position.Y + 150, "GCS"); 
+        title("Simulation time = " + num2str(iteration));                
 end
 
 function PlotPosition(objects)
@@ -50,6 +49,10 @@ function PlotPosition(objects)
         if isa(object, 'UAV')
             if object.Alive == 1
             %plot(uav.x, uav.y, '.k', 'Markersize', 22);        
+            pos = object.FlightPath.GetPositionAsArray();
+            if ~isempty(pos)
+                plot(pos(:,1), pos(:,2), 'k', 'linewidth', 0.5);
+            end
             plot(x, y, '.k', 'Markersize', 10);                    
             text(x-100, y+150, "UAV-"+num2str(object.Id) );                
             end

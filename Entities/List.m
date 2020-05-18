@@ -32,8 +32,21 @@ classdef List
         end
         % Value
         function output = Value(obj, index)
-           output = obj.Elements(index);
+           if iscell(obj.Elements)
+            output = obj.Elements{index};
+           else
+               output = obj.Elements(index);
+           end
         end        
+        
+        function output = First(obj)
+            if ~isempty(obj.Elements) 
+                output = obj.Elements(1);
+            else
+                output = [];
+            end            
+        end        
+        
         % Remove
         function obj = RemoveValueInIndex(obj, index)
            if index == 1
@@ -56,7 +69,7 @@ classdef List
         end
         % Modify
         function obj = ModifyValueInIndex(obj, index, newValue)
-            obj.Elements{index} = newValue;        
+            obj.Elements(index) = newValue;        
         end
         % Number of elements
         function res =  Count(obj)           

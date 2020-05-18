@@ -59,6 +59,33 @@ classdef UAV
             end
         end                
         
+        
+        function goal = GetNextGoalPosition(obj, gcs)            
+            if obj.GroundForcesToVisit.Count() > 0
+                goal_index = obj.GroundForcesToVisit.Value(1);
+                goal = gcs.GroundForces.Value(goal_index).Position;
+            else
+                goal = obj.Gcs.Position;
+            end
+        end
+        
+        function goal = GetNextGroundForce(obj)        
+            if obj.GroundForcesToVisit.Count() > 0
+                goal = obj.GroundForcesToVisit.Value(1);
+            else
+                goal = [];
+            end
+        end
+        
+        
+        function goal = GetPathToPlot(obj)        
+            if obj.FlightPath.Count() > 0
+                goal = obj.GroundForcesToVisit.Value(1);
+            else
+                goal = [];
+            end
+        end
+        
         % Overload of operator equal         
         function res = eq(input1, input2)
             res = 0;

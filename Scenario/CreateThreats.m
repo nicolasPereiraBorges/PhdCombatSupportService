@@ -34,8 +34,8 @@ xlim = [0, parameters.ScenarioWidth];
 ylim = [0, parameters.ScenarioHeight];
 zlim = [0, parameters.ScenarioDeepth];
 
-
-while(1)
+valid = 0;
+while(valid == 0)
     valid = 1;
     pos = GenerateRandomPosition(xlim, ylim, zlim);
     
@@ -56,15 +56,13 @@ while(1)
     
     % Distance to other threats
     for i = 1:threats.Count()
-        if (CalculateDistance(pos, threats.Value(i).Position) < minDistanceToThreats)
+        d = CalculateDistance(pos, threats.Value(i).Position);
+        if (d < minDistanceToThreats)
             valid = 0;
             break;
         end
     end
-    
-    if (valid == 1)
-        break;       
-    end
+      
 end
 
 

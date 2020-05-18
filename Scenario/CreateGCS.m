@@ -4,9 +4,6 @@ function gcs = CreateGCS()
 
 gcs = GroundControlStation();
 gcs.Id = 1;
-gcs.X = 1;
-gcs.Y = 1;
-gcs.Z = 0;
-
+gcs.Position = Position3D(1,1,0);
 end
 

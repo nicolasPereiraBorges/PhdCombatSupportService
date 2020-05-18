@@ -20,5 +20,41 @@ classdef FlightPath
                 obj.Length = length;            
             end
         end                                
+        
+        function value = First(obj)
+        
+            value = obj.Positions.First();
+        end
+        
+        function obj = UpdatePosGivenArray(obj, array)
+           obj.Positions = List();
+           obj = AddPosGivenArray(obj, array);
+        end
+        
+        function obj = AddPosGivenArray(obj, array)
+           n = size(array);
+           for i = 1: n(1)
+              x = array(i,1); 
+              y = array(i,2); 
+              p = Position3D(x,y);
+              obj.Positions = obj.Positions.AddLast(p);
+           end
+        end
+        
+        function pos = GetPositionAsArray(obj)
+           n = obj.Positions.Count();
+           if n == 0
+               pos = [];
+           else
+               pos = zeros(n, 2);               
+               for i = 1: n
+                   pos(i,1:2) = obj.Positions.Value(i).GetAsArray2D();
+               end
+           end          
+        end
+        
+        function count = Count(obj)
+           count = obj.Positions.Count(); 
+        end
     end
 end

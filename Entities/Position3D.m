@@ -39,5 +39,18 @@ classdef Position3D
             end            
         end
         
+        function output = GetAsArray2D(obj)
+           output = [obj.X,  obj.Y];
+        end
+        
+        function output = GetAsArray3D(obj)
+           output = [obj.X,  obj.Y, obj.Z];
+        end
+        
+        function dist = CalculateDistancePos(obj, pos)
+           dist = sqrt((obj.X - pos.X)^2 + ...
+                       (obj.Y - pos.Y)^2 + ...
+                       (obj.Z - pos.Z)^2);
+        end
     end
 end

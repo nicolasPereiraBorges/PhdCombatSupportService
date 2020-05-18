@@ -1,4 +1,4 @@
-function [points, success] = ApplyRRT_InC(uav, threats, paramOfRRT, virtualTargetFlag)
+function uav = ApplyRRT_InC(uav, goal)
 % function points = ApplyRRT(uav)
 % Generate graph using rapidly random tree path planning
 % Parameters: uav: Struct uav
@@ -9,89 +9,63 @@ function [points, success] = ApplyRRT_InC(uav, threats, paramOfRRT, virtualTarge
 
 
 % Get all parameters
-param = Get_Parameters();
-% Get UAV param
-uavParam = param.Uav;
-% Get simulation parameters
-simulationParam = param.Simulation;
-% Get path planning parameters
-pathPlanningParam = param.PathPlanning;
+param = Parameters();
+factor = 200;
+startPosition = uav.Position.GetAsArray2D();
+upperLeft = [-factor, param.ScenarioHeight + factor];
+lowerRight = [param.ScenarioWidth+factor, -factor];
+sufficientDistanceToGoal = 50;
+maxIteractions = 20000;
+thresholdDistance = uav.Position.CalculateDistancePos(goal)*0.05;
+%c_uav = [startPosition, goal, uav.Angle];
+c_uav = [startPosition, goal.GetAsArray2D(), pi/3];
+threats = uav.Threats;
 
-startPosition = [uav.x, uav.y];
-goal = uav.localLeaderPosition;
-
-upperLeft = simulationParam.upperLeft;
-lowerRight = simulationParam.lowerRight;
-
-[upperLeft, lowerRight] = CheckScenarioBounds(upperLeft, lowerRight, threats);
-sufficientDistanceToGoal = uavParam.sufficientDistanceToGoal;
-
-if  isempty(paramOfRRT) == 1
-    thresholdDistanceBase = pathPlanningParam.distanceEdges; 
-    thresholdDistance = round(uav.distance*thresholdDistanceBase);    
-    if virtualTargetFlag == 0
-        numberOfEdges = pathPlanningParam.numberOfEdges;
-    else
-        numberOfEdges = pathPlanningParam.numberOfEdgesVirtualTargets;
-    end
-    
-else
-    thresholdDistanceBase = paramOfRRT.thresholdDistanceBase; 
-    numberOfEdges =  paramOfRRT.numberOfEdges; 
-    thresholdDistance = round(uav.distance*thresholdDistanceBase);    
-end
-
-if thresholdDistance < uav.speed || virtualTargetFlag == 1
-    thresholdDistance = uav.speed;
-end
-
-
-c_uav = [startPosition, goal, uav.angle];
-if (size(threats,1) > 0)
-    threats_cx = [threats.cx]';
-    threats_cy = [threats.cy]';
-    threats_range = [threats.range]';
-    c_threats = [threats_cx, threats_cy, threats_range];
-else
+nThreats = threats.Count();
+if (threats.Count() == 0)
     c_threats = [[],[],[]];
+else
+    c_threats = zeros(nThreats,3);
+    for i = 1:nThreats
+       c_threats(i,1:3) = threats.Value(i).GetAsArray(); 
+       c_threats(i,3) = c_threats(i,3) * 1.1;
+    end
 end
-c_param = [numberOfEdges, thresholdDistance, pathPlanningParam.maxIteractions, pathPlanningParam.angleVariation, upperLeft, lowerRight, sufficientDistanceToGoal];
+
+numberOfEdges = 3000;
+%c_param = [numberOfEdges, thresholdDistance, maxIteractions, uav.Angle, upperLeft, lowerRight, sufficientDistanceToGoal];
+c_param = [numberOfEdges, thresholdDistance, maxIteractions, pi/3, upperLeft, lowerRight, sufficientDistanceToGoal];
 
 % Apply RRT in C
-points = RRT_C(c_uav, c_threats, c_param);
-if size(points,1) == 1
-    [x,y] = ProjectPoint(uav.x, uav.y, ...
-    uav.localLeaderPosition(1), uav.localLeaderPosition(2), uavParam.speed*simulationParam.timeStep);
-    %points = ApplyFixedSpace([x,y; uav.localLeaderPosition], uavParam.speed*simulationParam.timeStep); 
-    points = [startPosition;x,y];
-    success = 0;
-    return;
-end
-success = 1;
+%points = RRT_C(c_uav, c_threats, c_param);
+%points = ReducePath(points,threats);
 
-if virtualTargetFlag == 0
-    points = ReducePath(points,threats);
+if ~LineIntersectsObstacle(startPosition, goal.GetAsArray2D(), c_threats) 
+    points = [startPosition; goal.GetAsArray2D()];
+else    
+    points = RRT_C(c_uav, c_threats, c_param);
+    points = ReducePath(points,c_threats);
+    points = ApplyPathSmoothing(points);
 end
+points = ApplyFixedSpace(points, thresholdDistance); 
+
+uav.FlightPath = uav.FlightPath.UpdatePosGivenArray(points);
+
+ 
 return;
 
+% if size(points,1) == 1
+%     [x,y] = ProjectPoint(uav.x, uav.y, ...
+%     uav.localLeaderPosition(1), uav.localLeaderPosition(2), uavParam.speed*simulationParam.timeStep);
+%     %points = ApplyFixedSpace([x,y; uav.localLeaderPosition], uavParam.speed*simulationParam.timeStep); 
+%     points = [startPosition;x,y];
+%     success = 0;
+%     return;
+% end
+% success = 1;
+% 
+
+% return;
+
 end
 
-
-function [upperLeft, lowerRight] = CheckScenarioBounds(upperLeft, lowerRight, threats)
-
-    for i = 1: size(threats, 1)
-        threat = threats(i);    
-        if threat.cx - threat.range < upperLeft(1)
-            upperLeft(1) = threat.cx - (threat.range*1.2);
-        end
-        if threat.cx + threat.range > lowerRight(1)
-            lowerRight(1) = threat.cx + (threat.range*1.2);
-        end
-        if threat.cy + threat.range > upperLeft(2)
-            upperLeft(2) = threat.cy + (threat.range*1.2);
-        end
-        if threat.cy - threat.range < lowerRight(2)
-            lowerRight(2) = threat.cy - (threat.range*1.2);
-        end
-    end
-end

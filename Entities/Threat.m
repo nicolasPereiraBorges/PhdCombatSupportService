@@ -29,6 +29,10 @@ classdef Threat
             end
         end                
         
+        function output = GetAsArray(obj)
+           output = [obj.Position.GetAsArray2D(), obj.DetectionRange];
+        end
+        
         % Overload of operator equal         
         function res = eq(input1, input2)
             res = 0;
