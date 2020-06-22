@@ -41,25 +41,20 @@ while(valid == 0)
     
     % Distance to GCS
     if (CalculateDistance(pos, gcs.Position) < minDistanceToGCS)
+        valid = 0;
         continue;
     end
     % Distance to GFs
     for i = 1:groundForces.Count()
         if (CalculateDistance(pos, groundForces.Value(i).Position) < minDistanceToGFS)
-            valid = 0;
-            break;
+            valid = 0;            
         end
-    end    
-    if (valid == 0)
-        continue;        
-    end
-    
+    end            
     % Distance to other threats
     for i = 1:threats.Count()
         d = CalculateDistance(pos, threats.Value(i).Position);
         if (d < minDistanceToThreats)
-            valid = 0;
-            break;
+            valid = 0;            
         end
     end
       

@@ -1,25 +1,18 @@
-function goal = CalculateGoalToLeaveThreat(uavs, index)
-% function uavs = CalculateGoalToLeaveThreat(uavs, index, uav)
-% Calculate path to leave threat of the UAV that detects a threat
-% Input: uavs: matrix (np1(1)) of struct UAV
-%        index: index of uav in uavs 
-% Output goal: [x,y]  of the goal position of the uav to leave the threat
-% Aeronautics Institute of Technology
-% Author: Nicolas Pereira Borges - nicolas@ita.br
-% Date: 11/05/2017        
+function uav = CalculateGoalToLeaveThreat(uav, detectedThreat)
+ 
+    [p1, p2] = GetPerpendicularPoints(uav, detectedThreat);
+    p11 = Position3D(p1(1), p1(2));
+    p22 = Position3D(p2(1), p2(2));
+    d1 = p11.CalculateDistancePos(uav.Position);
+    d2 = p22.CalculateDistancePos(uav.Position);
+    if (d1 < d2)       
+            goal = p1;        
+    else       
+            goal = p2;        
+    end
+    uav.FlightPath = FlightPath();
+    points = [[uav.Position.X, uav.Position.Y]; goal];
+    points = ApplyFixedSpace(points, uav.Speed); 
+    uav.FlightPath = uav.FlightPath.UpdatePosGivenArray(points);                
 
-        % Get parameters
-        param = Get_Parameters();
-        flightFormationParam = param.FlightFormation();
-        % If uavs are flying in trail formation
-        if flightFormationParam.lineFormation == 1
-            try
-             goal = CalculateGoalToLeaveThreatTrailFormation(uavs, index);
-            catch
-               goal = uavs(index).goal;
-            end
-                
-        else % Unstructured formation
-           goal = CalculateGoalToLeaveThreatUnstructuredFormation(uavs, index);      
-        end
 end

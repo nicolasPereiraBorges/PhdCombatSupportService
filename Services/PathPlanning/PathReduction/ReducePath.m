@@ -8,8 +8,10 @@ function points = ReducePath(points, threats)
 % Author: Nicolas Pereira Borges - nicolas@ita.br
 % Date: 26/01/2017
 % Get number of threats
-points1 = repmat(points,1);
-nThreats = size(threats,1);
+
+param = Parameters();
+angleRef = param.angleVariation;
+
 % Set tolerance for distance from point to threat
 tolerance = 0.2;
 %Reduce Path
@@ -21,13 +23,13 @@ for i = 1:size(points(:, 1), 1)
         intercepts = LineIntersectsObstacle(points(i,1:2), points(j,1:2), threats);             
         if ~intercepts & ~p2ToClose
             angle = CalculateAngleBetweenTwoPoints(points(i, :), points(j,:));
-            if AngleIsInRange(points(i, :), points(j,:), angle) == 1            
+            if AngleIsInRange(points(i, :), points(j,:), angleRef) == 1            
                 canReduce = 0;    
                 if j == size(points(:, 1), 1)                
                         canReduce = 1;                
                 else
                     angle = CalculateAngleBetweenTwoPoints(points(j,:),points(j+1,:));
-                    if AngleIsInRange(points(j,:),points(j+1,:), angle) == 1            
+                    if AngleIsInRange(points(j,:),points(j+1,:), angleRef) == 1            
              %           plot([points(j,1), points(j+1,1)], [points(j,2), points(j+1,2)], 'g');
                         canReduce = 1;
                     else

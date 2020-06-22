@@ -11,6 +11,8 @@ classdef UAV
         Threats;
         UnderMission;
         Alive;
+        Exposed;
+        PathHistory;
     end
     methods
         
@@ -31,6 +33,8 @@ classdef UAV
                 obj.Threats = List();
                 obj.UnderMission = 0;
                 obj.Alive = 1;
+                obj.Exposed = 0;
+                obj.PathHistory = List();
             elseif nargin == 1
                 obj.Id = battery.Id;
                 obj.Battery = battery.Battery;
@@ -43,6 +47,8 @@ classdef UAV
                 obj.Threats = battery.Threats;
                 obj.UnderMission = battery.UnderMission;
                 obj.Alive = battery.Alive;
+                obj.Exposed = battery.Exposed;
+                obj.PathHistory = battery.PathHistory;
                 
             elseif nargin == 5
                 obj.Id = id;
@@ -56,9 +62,30 @@ classdef UAV
                 obj.Threats = threats;
                 obj.UnderMission = underMission;
                 obj.Alive = alive;
+                obj.Exposed = 0;
+                obj.PathHistory = List();
             end
         end                
         
+        function obj = UpdatePathHistory(obj)
+           
+            obj.PathHistory = obj.PathHistory.AddLast(obj.Position);
+            if obj.PathHistory.Count() > 5
+                obj.PathHistory = obj.PathHistory.RemoveValueInIndex(1);
+            end
+        end
+        
+        function pos = GetPathHistoryAsArray(obj)
+           n = obj.PathHistory.Count();
+           if n == 0
+               pos = [];
+           else
+               pos = zeros(n, 2);               
+               for i = 1: n
+                   pos(i,1:2) = obj.PathHistory.Value(i).GetAsArray2D();
+               end
+           end          
+        end
         
         function goal = GetNextGoalPosition(obj, gcs)            
             if obj.GroundForcesToVisit.Count() > 0
@@ -86,6 +113,18 @@ classdef UAV
             end
         end
         
+        function gf = GroundForcesToVisitAsString(obj)        
+            gf = 'GF=(';
+            if obj.GroundForcesToVisit.Count() > 0
+                for i = 1: obj.GroundForcesToVisit.Count()
+                   gf =  [gf, num2str(obj.GroundForcesToVisit.Value(i)), ','];
+                end
+                gf = gf(1:end-1);              
+            end
+            gf = [gf,')'];                                    
+        end
+        
+      
         % Overload of operator equal         
         function res = eq(input1, input2)
             res = 0;
@@ -93,5 +132,6 @@ classdef UAV
                 res = 1;
             end            
         end
+                        
     end
 end

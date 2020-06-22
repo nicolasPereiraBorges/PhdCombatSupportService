@@ -23,8 +23,8 @@ function PlotScenario(scenario, iteration)
         PlotPosition(gfs); 
         % Plot UAVs
         PlotPosition(uavs);               
-        plot(gcs.Position.X, gcs.Position.Y, '.g', 'markersize', 30); 
-        text(gcs.Position.X - 100, gcs.Position.Y + 150, "GCS"); 
+        plot(gcs.Position.X, gcs.Position.Y, '.m', 'markersize', 60); 
+        text(gcs.Position.X - 150, gcs.Position.Y + 350, "GCS"); 
         title("Simulation time = " + num2str(iteration));                
 end
 
@@ -53,17 +53,27 @@ function PlotPosition(objects)
             if ~isempty(pos)
                 plot(pos(:,1), pos(:,2), 'k', 'linewidth', 0.5);
             end
-            plot(x, y, '.k', 'Markersize', 10);                    
-            text(x-100, y+150, "UAV-"+num2str(object.Id) );                
+            plot(x, y, '.k', 'Markersize', 20);                    
+            text(x-150, y+150, ['UAV-',num2str(object.Id)]);                
+            text(x-200, y-150, object.GroundForcesToVisitAsString());                
+            
             end
         elseif isa(object, 'GroundForce')
-            plot(x, y, '.b', 'Markersize', 20);                                    
-            text(x-100, y+150, "GF-"+num2str(object.Id) );                
+            if (object.Visited == 1)
+                plot(x, y, '.b', 'Markersize', 40);                                    
+            else
+                plot(x, y, '.g', 'Markersize', 40);                                    
+            end
+            text(x-100, y+250, "GF-"+num2str(object.Id) );                
         else % Threat            
+            color = 'y';
+            if object.Detected ==1
+                color = 'r';
+            end
             plot(x, y, '.r', 'Markersize', 20);                                
             [xx,yy] = GeneratePointsCircle(object.DetectionRange, x, y);
-            plot(xx,yy, 'r', 'linewidth', 2);
-            text(x-100, y+150, "Threat-"+num2str(object.Id) );                
+            plot(xx,yy, color, 'linewidth', 2);
+            text(x-150, y+220, "Threat-"+num2str(object.Id) );                
         end                                
                 
     end

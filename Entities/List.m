@@ -20,16 +20,43 @@ classdef List
         function obj = AddFirst(obj, value)
            obj.Elements = [value, obj.Elements];
         end        
-        % Index
+        % Find
         function index = IndexOf(obj, value)
            index = -1;
             for i = 1: obj.Count()
-               if (value == obj.Elements{i})
-                   index = i;
-                   return;
-               end
+                if iscell(obj.Elements)
+                   if (value == obj.Elements{i})
+                       index = i;
+                       return;
+                   end
+                else
+                       if (value == obj.Elements(i))
+                       index = i;
+                       return;
+                       end
+                end
            end
         end
+        
+        % Find
+        function index = Contains(obj, value)
+           index = 0;
+            for i = 1: obj.Count()
+               if iscell(obj.Elements)
+                   if (value == obj.Elements{i})                   
+                       index = 1;
+                       return;
+                   end
+               else
+                   if (value == obj.Elements(i))                   
+                       index = 1;
+                       return;
+                   end
+               end
+            end
+           
+        end
+        
         % Value
         function output = Value(obj, index)
            if iscell(obj.Elements)
@@ -38,15 +65,18 @@ classdef List
                output = obj.Elements(index);
            end
         end        
-        
+        % Value
         function output = First(obj)
             if ~isempty(obj.Elements) 
-                output = obj.Elements(1);
+                if iscell(obj.Elements)
+                output = obj.Elements{1};
+               else
+                   output = obj.Elements(1);
+                end              
             else
                 output = [];
             end            
-        end        
-        
+        end               
         % Remove
         function obj = RemoveValueInIndex(obj, index)
            if index == 1
@@ -75,6 +105,6 @@ classdef List
         function res =  Count(obj)           
             res = length(obj.Elements);
         end
-            
+        
     end
 end

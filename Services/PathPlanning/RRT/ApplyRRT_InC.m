@@ -10,15 +10,17 @@ function uav = ApplyRRT_InC(uav, goal)
 
 % Get all parameters
 param = Parameters();
+angleRef = param.angleVariation;
+
 factor = 200;
 startPosition = uav.Position.GetAsArray2D();
 upperLeft = [-factor, param.ScenarioHeight + factor];
 lowerRight = [param.ScenarioWidth+factor, -factor];
 sufficientDistanceToGoal = 50;
-maxIteractions = 20000;
-thresholdDistance = uav.Position.CalculateDistancePos(goal)*0.05;
+maxIteractions = 50000;
+thresholdDistance = uav.Position.CalculateDistancePos(goal)*0.3;
 %c_uav = [startPosition, goal, uav.Angle];
-c_uav = [startPosition, goal.GetAsArray2D(), pi/3];
+c_uav = [startPosition, goal.GetAsArray2D(), angleRef];
 threats = uav.Threats;
 
 nThreats = threats.Count();
@@ -32,22 +34,23 @@ else
     end
 end
 
-numberOfEdges = 3000;
+numberOfEdges = 10000;
 %c_param = [numberOfEdges, thresholdDistance, maxIteractions, uav.Angle, upperLeft, lowerRight, sufficientDistanceToGoal];
-c_param = [numberOfEdges, thresholdDistance, maxIteractions, pi/3, upperLeft, lowerRight, sufficientDistanceToGoal];
+c_param = [numberOfEdges, thresholdDistance, maxIteractions, angleRef, upperLeft, lowerRight, sufficientDistanceToGoal];
 
 % Apply RRT in C
 %points = RRT_C(c_uav, c_threats, c_param);
 %points = ReducePath(points,threats);
 
-if ~LineIntersectsObstacle(startPosition, goal.GetAsArray2D(), c_threats) 
+if ~LineIntersectsObstacle(startPosition, goal.GetAsArray2D(), c_threats) && ...
+    AngleIsInRange(startPosition, goal.GetAsArray2D(), angleRef)
     points = [startPosition; goal.GetAsArray2D()];
 else    
     points = RRT_C(c_uav, c_threats, c_param);
     points = ReducePath(points,c_threats);
     points = ApplyPathSmoothing(points);
 end
-points = ApplyFixedSpace(points, thresholdDistance); 
+points = ApplyFixedSpace(points, uav.Speed); 
 
 uav.FlightPath = uav.FlightPath.UpdatePosGivenArray(points);
 
