@@ -1,4 +1,4 @@
-function threats = CreateThreats(gcs, groundForces)
+function threats = CreateThreats(gcs, nThreats, groundForces)
 % function threats = CreateThreats(groundForces)
 % Create threats in the scenario given parameters
 % obtained from funciton Parameters()
@@ -9,7 +9,7 @@ function threats = CreateThreats(gcs, groundForces)
 % Get parameters
 parameters = Parameters();
 % Threatss parameters
-nThreats = parameters.ScenarioNumberOfThreats;
+%nThreats = parameters.ScenarioNumberOfThreats;
 detectionRange = parameters.ThreatsDetectionRange;
 weaponRange = parameters.ThreatsWeaponRange;
 % Create List

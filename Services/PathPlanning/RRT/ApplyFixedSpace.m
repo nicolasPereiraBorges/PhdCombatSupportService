@@ -9,7 +9,7 @@ function newPoints = ApplyFixedSpace(points, distance)
 % Date: 04/09/2016
 
 %newPoints = points(2:end,:);
-distance = 10;
+%distance = 10;
 % check number of points
 nPoints = size(points, 1);
 

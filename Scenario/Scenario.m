@@ -10,14 +10,14 @@ classdef Scenario
     end
     
     methods
-        function obj = Scenario()
-            if nargin ~= 0
+        function obj = Scenario(nUAVs, nGFs, nThreats)
+            if nargin ~= 3
                 error('prog:input', 'Constructor of class Scenario - Invalid number of inputs. Received %d.', nargin);
             else
                 obj.GCS = CreateGCS();
-                obj.UAVs = CreateUavs(obj.GCS);
-                obj.GroundForces = CreateGroundForces(obj.GCS);
-                obj.Threats = CreateThreats(obj.GCS, obj.GroundForces);
+                obj.UAVs = CreateUavs(obj.GCS, nUAVs);
+                obj.GroundForces = CreateGroundForces(obj.GCS, nGFs);
+                obj.Threats = CreateThreats(obj.GCS, nThreats, obj.GroundForces);
             end            
         end        
     end

@@ -1,4 +1,4 @@
-function PlotScenario(scenario, iteration)
+function PlotScenario(scenario, iteration, figure)
 %Aeronautics Institute of Technology
 %Author: Nicolas Pereira Borges - nicolas@ita.br
 %Date: 07/11/2016
@@ -10,13 +10,19 @@ function PlotScenario(scenario, iteration)
     threats = scenario.Threats;
     gfs = scenario.GroundForces;
     gcs = scenario.GCS;
-        
+    %cla(figure);
+    set(0, 'CurrentFigure', figure)
+    cla reset
+    %subplot(1,4,1:3);
         factor = 1000;
         %Clear screen and plot base points
-        cla reset
+        
         hold all;    
-        xlim([-factor, param.ScenarioWidth + factor]);
+        xlim([-factor, param.ScenarioWidth + factor]);        
+        xlim([-factor, 8100]);
         ylim([-factor, param.ScenarioHeight + factor]);
+        
+        %ylim([-3000, param.ScenarioHeight + factor]);
         % Plot threats
         PlotPosition(threats)
         % Plot Edges
@@ -24,8 +30,10 @@ function PlotScenario(scenario, iteration)
         % Plot UAVs
         PlotPosition(uavs);               
         plot(gcs.Position.X, gcs.Position.Y, '.m', 'markersize', 60); 
-        text(gcs.Position.X - 150, gcs.Position.Y + 350, "GCS"); 
+        text(gcs.Position.X - 100, gcs.Position.Y + 250, "GCS"); 
         title("Simulation time = " + num2str(iteration));                
+        
+    
 end
 
 function PlotPosition(objects)

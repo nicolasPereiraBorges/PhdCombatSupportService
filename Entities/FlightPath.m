@@ -26,6 +26,10 @@ classdef FlightPath
             value = obj.Positions.First();
         end
         
+        function value = Last(obj)        
+            value = obj.Positions.Last();
+        end
+        
         function obj = UpdatePosGivenArray(obj, array)
            obj.Positions = List();
            obj = AddPosGivenArray(obj, array);
@@ -51,6 +55,18 @@ classdef FlightPath
                    pos(i,1:2) = obj.Positions.Value(i).GetAsArray2D();
                end
            end          
+        end
+        
+        function obj = Trucante(obj, id)
+           
+           p2 = List();           
+           for i = 1: obj.Count()               
+               p2 = p2.AddLast(obj.Positions.Value(i));
+               if i == id
+                   break;
+               end
+           end
+           obj.Positions = p2;
         end
         
         function count = Count(obj)

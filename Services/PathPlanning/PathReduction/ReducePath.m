@@ -21,29 +21,29 @@ for i = 1:size(points(:, 1), 1)
         %p1ToClose = CheckIfPointIsToCloseToThreat(points(i, :), threats, tolerance);
         p2ToClose = CheckIfPointIsToCloseToThreat(points(j,:), threats, tolerance);        
         intercepts = LineIntersectsObstacle(points(i,1:2), points(j,1:2), threats);             
-        if ~intercepts & ~p2ToClose
-            angle = CalculateAngleBetweenTwoPoints(points(i, :), points(j,:));
-            if AngleIsInRange(points(i, :), points(j,:), angleRef) == 1            
-                canReduce = 0;    
-                if j == size(points(:, 1), 1)                
-                        canReduce = 1;                
-                else
-                    angle = CalculateAngleBetweenTwoPoints(points(j,:),points(j+1,:));
-                    if AngleIsInRange(points(j,:),points(j+1,:), angleRef) == 1            
-             %           plot([points(j,1), points(j+1,1)], [points(j,2), points(j+1,2)], 'g');
-                        canReduce = 1;
-                    else
-                      %  plot([points(j,1), points(j+1,1)], [points(j,3), points(j+1,2)], 'r');
-                    end
-                end
+        if ~intercepts %&& ~p2ToClose
+            %angle = CalculateAngleBetweenTwoPoints(points(i, :), points(j,:));
+%             if AngleIsInRange(points(i, :), points(j,:), angleRef) == 1            
+%                 canReduce = 0;    
+%                 if j == size(points(:, 1), 1)                
+%                         canReduce = 1;                
+%                 else
+%                     angle = CalculateAngleBetweenTwoPoints(points(j,:),points(j+1,:));
+%                     if AngleIsInRange(points(j,:),points(j+1,:), angleRef) == 1            
+%              %           plot([points(j,1), points(j+1,1)], [points(j,2), points(j+1,2)], 'g');
+%                         canReduce = 1;
+%                     else
+%                       %  plot([points(j,1), points(j+1,1)], [points(j,3), points(j+1,2)], 'r');
+%                     end
+%                 end
                                              
-            if canReduce == 1
+           %if canReduce == 1
                 points = [points(1:i, :); points(j:end, :)];            
                 break;
-            end
-            else
+          %  end
+           % else
                 %plot([points(j,1), points(j+1,1)], [points(j,2), points(j+1,2)], 'b');
-            end
+          %  end
                
    
         else

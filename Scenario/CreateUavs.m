@@ -1,4 +1,4 @@
-function uavs = CreateUavs(gcs)
+function uavs = CreateUavs(gcs, nUAVs)
 % function uavs = CreateUavs(param)
 % Create uavs in the scenario given parameters
 % obtained from funciton Parameters()
@@ -9,7 +9,7 @@ function uavs = CreateUavs(gcs)
     % Get parameters
     parameters = Parameters();        
     % UAVs parameters
-    nUAVs = parameters.ScenarioNumberOfUAVs;
+    %nUAVs = parameters.ScenarioNumberOfUAVs;
     speed = parameters.UAVsSpeed;
     % Create List
     uavs = List();    

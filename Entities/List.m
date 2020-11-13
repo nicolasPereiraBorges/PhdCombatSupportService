@@ -65,6 +65,8 @@ classdef List
                output = obj.Elements(index);
            end
         end        
+        
+        
         % Value
         function output = First(obj)
             if ~isempty(obj.Elements) 
@@ -76,7 +78,22 @@ classdef List
             else
                 output = [];
             end            
-        end               
+        end
+        
+        % Value
+        function output = Last(obj)
+            if ~isempty(obj.Elements) 
+                if iscell(obj.Elements)
+                output = obj.Elements{end};
+               else
+                   output = obj.Elements(end);
+                end              
+            else
+                output = [];
+            end            
+        end
+        
+        
         % Remove
         function obj = RemoveValueInIndex(obj, index)
            if index == 1

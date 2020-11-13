@@ -1,4 +1,4 @@
-function groundForces = CreateGroundForces(gcs)
+function groundForces = CreateGroundForcesWithThreats(gcs, nGroundForces, threats)
 % function threats = CreateThreats(groundForces)
 % Create threats in the scenario given parameters
 % obtained from funciton Parameters()
@@ -9,7 +9,7 @@ function groundForces = CreateGroundForces(gcs)
 % Get parameters
 parameters = Parameters();
 % Threatss parameters
-nGroundForces = parameters.ScenarioNumberOfGroundForces;
+%nGroundForces = parameters.ScenarioNumberOfGroundForces;
 % Create List
 groundForces = List();
 % Create UAVs
