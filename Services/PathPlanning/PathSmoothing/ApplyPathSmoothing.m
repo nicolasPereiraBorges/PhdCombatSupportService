@@ -6,7 +6,8 @@ function path = ApplyPathSmoothing(points)
 % Aeronautics Institute of Technology
 % Author: Nicolas Pereira Borges - nicolas@ita.br
 % Date: 14/02/2017
-        
+       path = points; 
+return;
     try
     %path = points;
     %return;

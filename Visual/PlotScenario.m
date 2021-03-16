@@ -1,4 +1,4 @@
-function PlotScenario(scenario, iteration, figure)
+function PlotScenario(scenario, iteration, figure, knowAreas)
 %Aeronautics Institute of Technology
 %Author: Nicolas Pereira Borges - nicolas@ita.br
 %Date: 07/11/2016
@@ -10,25 +10,26 @@ function PlotScenario(scenario, iteration, figure)
     threats = scenario.Threats;
     gfs = scenario.GroundForces;
     gcs = scenario.GCS;
-    %cla(figure);
-    set(0, 'CurrentFigure', figure)
-    cla reset
+    cla(figure);
+    %set(0, 'CurrentFigure', figure)
+    %cla reset
     %subplot(1,4,1:3);
         factor = 1000;
         %Clear screen and plot base points
         
         hold all;    
         xlim([-factor, param.ScenarioWidth + factor]);        
-        xlim([-factor, 8100]);
+        %xlim([-factor, 8100]);
         ylim([-factor, param.ScenarioHeight + factor]);
         
-        %ylim([-3000, param.ScenarioHeight + factor]);
+        %ylim([-3000, param.ScenarioHeight + 3000]);
         % Plot threats
         PlotPosition(threats)
         % Plot Edges
         PlotPosition(gfs); 
         % Plot UAVs
         PlotPosition(uavs);               
+        plot(knowAreas(:,1), knowAreas(:,2), '.g', 'markersize', 5);
         plot(gcs.Position.X, gcs.Position.Y, '.m', 'markersize', 60); 
         text(gcs.Position.X - 100, gcs.Position.Y + 250, "GCS"); 
         title("Simulation time = " + num2str(iteration));                
@@ -58,9 +59,9 @@ function PlotPosition(objects)
             if object.Alive == 1
             %plot(uav.x, uav.y, '.k', 'Markersize', 22);        
             pos = object.FlightPath.GetPositionAsArray();
-            if ~isempty(pos)
-                plot(pos(:,1), pos(:,2), 'k', 'linewidth', 0.5);
-            end
+%             if ~isempty(pos)
+%                 plot(pos(:,1), pos(:,2), 'k', 'linewidth', 0.5);
+%             end
             plot(x, y, '.k', 'Markersize', 20);                    
             text(x-150, y+150, ['UAV-',num2str(object.Id)]);                
             text(x-200, y-150, object.GroundForcesToVisitAsString());                

@@ -13,7 +13,7 @@ function [p1, p2] = GetPerpendicularPoints(uav, threat)
 % Date: 11/05/2017 
    
     lastMovements = uav.GetPathHistoryAsArray();
-    factor = 1.4;
+    factor = 1.3;
     % Get midPoint of line to end of threat    
     xX = lastMovements(:,1);
     yY = lastMovements(:,2);

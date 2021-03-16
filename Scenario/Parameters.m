@@ -1,4 +1,7 @@
 function out = Parameters()
+    % Simulation
+    out.ReplanOptimizer = 0;
+    out.RiskMap =  1;
     % UAV
     out.UAVsSpeed = 50; %m/s
     out.angleVariation = 2*pi;%spi/2; %m/s
@@ -10,9 +13,11 @@ function out = Parameters()
     out.ThreatsDetectionRange = 600; %meters
     out.ThreatsWeaponRange = 0; %meters
     %out.ExposureTimeThreshold = 4;
-    out.ExposureTimeThreshold = 10;
+    %out.ExposureTimeThreshold = 10;
+    out.ExposureTimeThreshold = 8;
     %out.DeathProbability = 0.25;
     out.DeathProbability = 0.05;
+    %out.DeathProbability = 0.0;
     % Scenario
     out.Plot = 0;
     out.StealthFlag = 0;

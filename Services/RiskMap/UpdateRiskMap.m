@@ -6,6 +6,8 @@ function riskMap = UpdateRiskMap(riskMap)
     noFly = riskMap.NoFly;
     CoveredArea = riskMap.CoveredArea;
     
-    riskMap.Map = safe + CoveredArea - noFly;
+    riskMap.Map = noFly.*-1;
+    riskMap.Map(riskMap.Map >= 0) = safe(riskMap.Map >= 0);
+    %riskMap.Map = safe + CoveredArea - noFly;
     
 end

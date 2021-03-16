@@ -23,6 +23,7 @@ for i = 1: detectedThreats.Count()
         if stealth  == 1
             %First time detect threat
             uav = CalculateGoalToLeaveThreat(uav, detectedThreat);
+            uav.WaypointsToVisit = List();
             detectedThreat.Detected = 1;
             uav.Threats = uav.Threats.AddLast(detectedThreat);        
             newExposure = 0;        
@@ -35,7 +36,9 @@ for i = 1: detectedThreats.Count()
                         uav2 = newScenario.UAVs.Value(j);
                         uav2.Threats = uav2.Threats.AddLast(detectedThreat);
                         uav2.FlightPath = FlightPath();
+                        uav2.WaypointsToVisit = List();
                         newScenario.UAVs = newScenario.UAVs.ModifyValueInIndex(j, uav2); 
+                        
                     end
                 end
             end

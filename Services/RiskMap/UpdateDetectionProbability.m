@@ -19,4 +19,5 @@ function riskMap = UpdateDetectionProbability(riskMap, threat)
         riskMap.NoFly(currentCell(1),currentCell(2)) = decProb;
     end
     
+    riskMap = UpdateRiskMap(riskMap);
 end

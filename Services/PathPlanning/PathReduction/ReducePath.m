@@ -8,7 +8,6 @@ function points = ReducePath(points, threats)
 % Author: Nicolas Pereira Borges - nicolas@ita.br
 % Date: 26/01/2017
 % Get number of threats
-
 param = Parameters();
 angleRef = param.angleVariation;
 

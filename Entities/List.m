@@ -36,8 +36,7 @@ classdef List
                        end
                 end
            end
-        end
-        
+        end        
         % Find
         function index = Contains(obj, value)
            index = 0;
@@ -55,8 +54,7 @@ classdef List
                end
             end
            
-        end
-        
+        end        
         % Value
         function output = Value(obj, index)
            if iscell(obj.Elements)
@@ -64,9 +62,7 @@ classdef List
            else
                output = obj.Elements(index);
            end
-        end        
-        
-        
+        end           
         % Value
         function output = First(obj)
             if ~isempty(obj.Elements) 
@@ -79,7 +75,6 @@ classdef List
                 output = [];
             end            
         end
-        
         % Value
         function output = Last(obj)
             if ~isempty(obj.Elements) 
@@ -92,11 +87,14 @@ classdef List
                 output = [];
             end            
         end
-        
-        
         % Remove
         function obj = RemoveValueInIndex(obj, index)
-           if index == 1
+           
+            if obj.Count() == 0
+                return;
+            end
+                
+            if index == 1
                if (obj.Count() == 1)
                    obj.Elements = {};                   
                end
@@ -117,6 +115,13 @@ classdef List
         % Modify
         function obj = ModifyValueInIndex(obj, index, newValue)
             obj.Elements(index) = newValue;        
+        end
+        % Get array of numbers
+        function res =  AsArrayOfNumbers(obj)
+            res = zeros(1,obj.Count());
+            for i = 1:obj.Count()
+               res(i) = obj.Value(i); 
+            end
         end
         % Number of elements
         function res =  Count(obj)           

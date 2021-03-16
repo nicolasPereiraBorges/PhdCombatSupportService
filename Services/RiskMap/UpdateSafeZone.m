@@ -10,5 +10,5 @@ function riskMap = UpdateSafeZone(riskMap, i,j)
      if (riskMap.Safe(x,y) > 1)
          riskMap.Safe(x,y) = 1;
      end
-    
+    riskMap = UpdateRiskMap(riskMap);
 end

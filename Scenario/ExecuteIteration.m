@@ -22,7 +22,7 @@ nUAVs = scenario.UAVs.Count();
 AVAILABLE_UAVS = ones(nUAVs,1);
 % VISITED_GF = zeros(
 
-COST_MAP = CreateCostMap(param.Scenarioheight, param.ScenarioWidth);
+COST_MAP = CreateCostMap(param.ScenarioHeight, param.ScenarioWidth);
 
 for missionTime = 1: 15000
     if mod(missionTime,timestep) == 200

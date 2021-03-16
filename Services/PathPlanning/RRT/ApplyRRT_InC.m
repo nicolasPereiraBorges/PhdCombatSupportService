@@ -8,10 +8,14 @@ function uav = ApplyRRT_InC(uav, goal)
 % Date: 26/01/2017
 
 
+
 % Get all parameters
 param = Parameters();
 angleRef = param.angleVariation;
 
+if uav.Position.X == goal.X
+    goal.X = goal.X + 0.0001;
+end
 factor = 1000;
 startPosition = uav.Position.GetAsArray2D();
 upperLeft = [-factor, param.ScenarioHeight + factor];
@@ -31,7 +35,7 @@ else
     c_threats = zeros(nThreats,3);
     for i = 1:nThreats
        c_threats(i,1:3) = threats.Value(i).GetAsArray(); 
-       c_threats(i,3) = c_threats(i,3) * 1.1;
+       c_threats(i,3) = c_threats(i,3) *1.05;
     end
 end
 
@@ -49,9 +53,6 @@ if ~LineIntersectsObstacle(startPosition, goal.GetAsArray2D(), c_threats) && ...
 else           
     points = RRT_C(c_uav, c_threats, c_param);
     points = ReducePath(points,c_threats);
-%     points = ReducePath(points,c_threats);
-%     points = ReducePath(points,c_threats);
-%     points = ReducePath(points,c_threats);
     points = ApplyPathSmoothing(points);
         
     
@@ -63,25 +64,18 @@ p1 = Position3D(points(1,1),points(1,2));
     p2 = Position3D(points(end,1),points(end,2));
     
     d = CalculateDistance(p1,p2);
-    if d < 200
+    if d < 50
          points = [startPosition; goal.GetAsArray2D()];
     end
 
+    if size(points,1) < 5
+        points = [startPosition; goal.GetAsArray2D()];
+        points = ApplyFixedSpace(points, uav.Speed); 
+    end
 uav.FlightPath = uav.FlightPath.UpdatePosGivenArray(points);
 
  
 return;
-
-% if size(points,1) == 1
-%     [x,y] = ProjectPoint(uav.x, uav.y, ...
-%     uav.localLeaderPosition(1), uav.localLeaderPosition(2), uavParam.speed*simulationParam.timeStep);
-%     %points = ApplyFixedSpace([x,y; uav.localLeaderPosition], uavParam.speed*simulationParam.timeStep); 
-%     points = [startPosition;x,y];
-%     success = 0;
-%     return;
-% end
-% success = 1;
-% 
 
 % return;
 

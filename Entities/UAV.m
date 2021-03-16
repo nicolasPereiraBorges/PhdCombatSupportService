@@ -8,6 +8,7 @@ classdef UAV
         FlightPath;
         Gcs;        
         GroundForcesToVisit;
+        WaypointsToVisit;
         Threats;
         UnderMission;
         Alive;
@@ -35,6 +36,7 @@ classdef UAV
                 obj.Alive = 1;
                 obj.Exposed = 0;
                 obj.PathHistory = List();
+                obj.WaypointsToVisit = List();
             elseif nargin == 1
                 obj.Id = battery.Id;
                 obj.Battery = battery.Battery;
@@ -48,8 +50,8 @@ classdef UAV
                 obj.UnderMission = battery.UnderMission;
                 obj.Alive = battery.Alive;
                 obj.Exposed = battery.Exposed;
-                obj.PathHistory = battery.PathHistory;
-                
+                obj.PathHistory = battery.PathHistory;     
+                obj.WaypointsToVisit = List();
             elseif nargin == 5
                 obj.Id = id;
                 obj.Battery = battery;
@@ -64,6 +66,7 @@ classdef UAV
                 obj.Alive = alive;
                 obj.Exposed = 0;
                 obj.PathHistory = List();
+                obj.WaypointsToVisit = List();
             end
         end                
         
@@ -85,6 +88,14 @@ classdef UAV
                    pos(i,1:2) = obj.PathHistory.Value(i).GetAsArray2D();
                end
            end          
+        end
+        
+        function res = IsUnderMission(obj)
+           res = 1;
+            if (obj.Alive == 0 || obj.UnderMission == 0)
+               res = 0;
+           end
+           
         end
         
         function goal = GetNextGoalPosition(obj, gcs)            
@@ -132,6 +143,8 @@ classdef UAV
                 res = 1;
             end            
         end
+        
+        
                         
     end
 end
