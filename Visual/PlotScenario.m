@@ -3,6 +3,13 @@ function PlotScenario(scenario, iteration, figure, knowAreas)
 %Author: Nicolas Pereira Borges - nicolas@ita.br
 %Date: 07/11/2016
 
+
+    global BEST_SOLUTIONS;
+    global BEST_FITNESS;
+    global INDEX_BEST;
+    global TIME_OF_FLIGHT;
+
+
     % Get all parameters
     param = Parameters;       
     
@@ -32,7 +39,36 @@ function PlotScenario(scenario, iteration, figure, knowAreas)
         plot(knowAreas(:,1), knowAreas(:,2), '.g', 'markersize', 5);
         plot(gcs.Position.X, gcs.Position.Y, '.m', 'markersize', 60); 
         text(gcs.Position.X - 100, gcs.Position.Y + 250, "GCS"); 
-        title("Simulation time = " + num2str(iteration));                
+        title("Simulation time = " + num2str(iteration));          
+        
+        
+        a = gca; % get the current axis;
+        % set the width of the axis (the third value in Position) 
+        % to be 60% of the Figure's width
+        a.Position(3) = 0.6;
+        % put the textbox at 75% of the width and 
+        % 10% of the height of the figure
+        
+        delete(findall(gcf,'type','annotation'))
+            
+        saida = [BEST_SOLUTIONS, TIME_OF_FLIGHT, BEST_FITNESS];
+        
+        k = 0.6;
+        annotation('textbox', [0.80, 0.7, 0.1, 0.1], 'String', "Best solutions on DVRP");    
+
+        for i = 1: size(saida,1)
+            strSaida = "";
+            for j = 1: size(saida,2) - 2
+                strSaida = strSaida + num2str(saida(i,j)) + " ";
+            end                
+            strSaida = strSaida + " --- T(x): " + num2str(saida(i,end-1));            
+            strSaida = strSaida + " -- F(x): " + num2str(saida(i,end));
+            annotation('textbox', [0.80, k, 0.1, 0.1], 'String', strSaida);    
+            k = k - 0.03;
+        end               
+        
+        
+        
         
     
 end

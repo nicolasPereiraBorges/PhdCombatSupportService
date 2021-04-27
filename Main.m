@@ -14,11 +14,12 @@ TIME = 0;
 VISITED_GF = [];
 EXPOSURE_TIME = [];
 AVAILABLE_UAVS = [];
-nUAVs = 1;
+nUAVs = 2;
 cellSizeRiskMap = 200;
 
 % Load scenario
-load('Z:\Doutorado\Source\Dataset_22_7_2020\T=8\G=5\1.mat');
+%load('Z:\Doutorado\Source\Dataset_22_7_2020\T=8\G=10\8.mat');
+load('Z:\Doutorado\Source\Dataset_22_7_2020\T=8\G=5\8.mat');
 % Add UAVs to scneario
 scenario.UAVs =  CreateUavs(scenario.GCS, nUAVs);
 % Create risk map

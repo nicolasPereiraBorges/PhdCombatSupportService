@@ -6,7 +6,7 @@ function risk = CreateRiskMap(height, width, resolution)
     m = ceil(height/resolution);
     n = ceil(width/resolution);
         
-    safeZoneRisk = CreateRiskMapLayer(m,n) - 0.01; 
+    safeZoneRisk = CreateRiskMapLayer(m,n) - 0.001; 
     noFlyZoneRisk = CreateRiskMapLayer(m,n);
     coveredArea = CreateRiskMapLayer(m,n);
     map = CreateRiskMapLayer(m,n);    
